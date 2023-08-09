@@ -1,0 +1,51 @@
+
+# get your api key from https://platform.openai.com/account/api-keys
+key: "your_key_here"
+
+limits:
+  # maximum amount of seconds to accumulate for the summarizer, keep this in the hourly range
+  timeframe: 7200 # 2h
+  # maximum amount of words to accumulate for the summarizer, keep in mind the limits of each model
+  words: 3000 # 3000 for v3.5 TURBO, 25000 for v4
+
+dms:
+  # include private messages on the prompt
+  enable: false
+  # indicating private messaging may concern the model
+  format: '%username%: @%recipient% %message%'
+
+prompt:
+  # the permission will be kungfu.prompt.moderation
+  moderation:
+    enabled: true
+    before: |
+        Indicate interesting conversations from this Minecraft community chat. Identify messages, quoting them and specifying the members involved for topics that might be of interest to:
+        - moderators: seed cracking/leaking, stealing, griefing, hacking...
+        - server administrators: lag, connection issues, anticheat, etc...
+        - community managers: community feeling...
+        - helpers: items, questions, staff...
+    after: ""
+  # try to use only one prompt, or as few as you need, as this will multiply
+  # the amount of tokens used PER prompt
+  # the permission will be kungfu.prompt.fun
+  fun:
+    enabled: false
+    before: |
+      Indicate interesting conversations from this Minecraft community chat. Identify messages, quoting them and specifying the members involved for topics that might be of interest to:
+      - ninja turtles: tv series similar to ninja turtles...
+      - humus enjoyer: anyone talking about humus...
+    after: ""
+
+
+
+messages:
+  prefix: '&5&l- &r&5kung-fu: &7'
+  pending: "while you were offline, the AI supervisor summarized the chat"
+  up_to_date: "you didn't miss enough to get a summary"
+  reviewed: "reviewed"
+  non_reviewed: "pending review"
+
+ui:
+  title: "&5&lAI summaries"
+  reviewed: GREEN_STAINED_GLASS_PANE
+  non_reviewed: RED_STAINED_GLASS_PANE
