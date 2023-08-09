@@ -34,6 +34,7 @@ public class API {
         flushing=false;
 
         this.plugin=plugin;
+        this.plugin.saveDefaultConfig();
 
         // load the data index
         this.dataFile = this.createFile("data.yml", true);
@@ -105,6 +106,11 @@ public class API {
             this.plugin.getLogger().severe("unable to read or reset data index");
         }
         flushing=false;
+    }
+
+    private void close() throws IOException {
+        this.data.save(this.dataFile);
+        this.chatOutput.close();
     }
 
     /**
