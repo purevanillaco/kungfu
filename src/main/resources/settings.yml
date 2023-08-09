@@ -6,7 +6,7 @@ limits:
   # maximum amount of seconds to accumulate for the summarizer, keep this in the hourly range
   timeframe: 7200 # 2h
   # maximum amount of words to accumulate for the summarizer, keep in mind the limits of each model
-  words: 3000 # 3000 for v3.5 TURBO, 25000 for v4
+  words: 2950 # 3000 for v3.5 TURBO, 25000 for v4. please, subtract the largest enabled prompt word count
 
 dms:
   # include private messages on the prompt
@@ -39,7 +39,7 @@ prompt:
 
 
 messages:
-  prefix: '&5&l- &r&5kung-fu: &7'
+  prefix: '&5&l- &r&5kungfu: &7'
   pending: "while you were offline, the AI supervisor summarized the chat"
   up_to_date: "you didn't miss enough to get a summary"
   reviewed: "reviewed"
