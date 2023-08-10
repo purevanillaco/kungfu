@@ -24,35 +24,47 @@ public class GenericListener implements org.bukkit.event.Listener {
 
     @EventHandler()
     public void onMessage(AsyncChatEvent event){
-        try {
-            Main.getAPI().log(event.getPlayer().getName(), ((TextComponent) event.originalMessage()).content(), null);
-        } catch (IOException e) {
-            throw new RuntimeException(e);
-        }
+        this.plugin.getServer().getScheduler().runTaskAsynchronously(this.plugin, () -> {
+            try {
+                Main.getAPI().log(event.getPlayer().getName(), ((TextComponent) event.originalMessage()).content(), null);
+            } catch (IOException e) {
+                throw new RuntimeException(e);
+            }
+        });
     }
 
     @EventHandler
     public void onPrivateMessage(PlayerCommandPreprocessEvent event) throws IOException {
-        Set<String> commands = new HashSet<>();
-        commands.add("msg");
-        commands.add("tell");
-        commands.add("w");
 
-        String[] parts = event.getMessage().split("\\s+");
-        if(parts.length>=3){
-            for(String command: commands){
-                if(parts[0].toLowerCase().equals("/"+command)){
-                    @Nullable Player recipient = this.plugin.getServer().getPlayer(parts[1]);
-                    if(recipient!=null){
-                        String message = String.join(" ", Arrays.stream(parts).toList().subList(2, parts.length));
-                        Set<Player> recipients = new HashSet<>();
-                        recipients.add(recipient);
-                        Main.getAPI().log(event.getPlayer().getName(), message, recipients);
+        plugin.getServer().getScheduler().runTaskAsynchronously(this.plugin, () -> {
+
+            Set<String> commands = new HashSet<>();
+            commands.add("msg");
+            commands.add("tell");
+            commands.add("w");
+
+            String[] parts = event.getMessage().split("\\s+");
+            if(parts.length>=3){
+                for(String command: commands){
+                    if(parts[0].toLowerCase().equals("/"+command)){
+                        @Nullable Player recipient = this.plugin.getServer().getPlayer(parts[1]);
+                        if(recipient!=null){
+                            String message = String.join(" ", Arrays.stream(parts).toList().subList(2, parts.length));
+                            Set<Player> recipients = new HashSet<>();
+                            recipients.add(recipient);
+                            try {
+                                Main.getAPI().log(event.getPlayer().getName(), message, recipients);
+                            } catch (IOException e) {
+                                throw new RuntimeException(e);
+                            }
+                        }
+                        break;
                     }
-                    break;
                 }
             }
-        }
+
+        });
+
     }
 
 }

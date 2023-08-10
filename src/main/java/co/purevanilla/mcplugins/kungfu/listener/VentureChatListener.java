@@ -24,32 +24,42 @@ public class VentureChatListener implements org.bukkit.event.Listener {
 
     @EventHandler
     public void onPrivateMessage(PlayerCommandPreprocessEvent event) throws IOException {
-        Set<String> commands = new HashSet<>();
-        commands.add("r");
-        commands.add("reply");
 
-        String[] parts = event.getMessage().split("\\s+");
-        if(parts.length>=2){
-            for(String command: commands){
-                if(parts[0].toLowerCase().equals("/"+command)){
-                    MineverseChatPlayer sender = MineverseChatAPI.getMineverseChatPlayer(event.getPlayer());
-                    if(sender!=null){
-                        UUID replyUUID = sender.getReplyPlayer();
-                        if(replyUUID!=null){
-                            Player recipient = this.plugin.getServer().getPlayer(replyUUID);
-                            if(recipient!=null){
-                                String message = String.join(" ", Arrays.stream(parts).toList().subList(1, parts.length));
-                                Set<Player> recipients = new HashSet<>();
-                                recipients.add(recipient);
-                                Main.getAPI().log(event.getPlayer().getName(), message, recipients);
+        plugin.getServer().getScheduler().runTaskAsynchronously(this.plugin, () -> {
+
+            Set<String> commands = new HashSet<>();
+            commands.add("r");
+            commands.add("reply");
+
+            String[] parts = event.getMessage().split("\\s+");
+            if(parts.length>=2){
+                for(String command: commands){
+                    if(parts[0].toLowerCase().equals("/"+command)){
+                        MineverseChatPlayer sender = MineverseChatAPI.getMineverseChatPlayer(event.getPlayer());
+                        if(sender!=null){
+                            UUID replyUUID = sender.getReplyPlayer();
+                            if(replyUUID!=null){
+                                Player recipient = this.plugin.getServer().getPlayer(replyUUID);
+                                if(recipient!=null){
+                                    String message = String.join(" ", Arrays.stream(parts).toList().subList(1, parts.length));
+                                    Set<Player> recipients = new HashSet<>();
+                                    recipients.add(recipient);
+                                    try {
+                                        Main.getAPI().log(event.getPlayer().getName(), message, recipients);
+                                    } catch (IOException e) {
+                                        throw new RuntimeException(e);
+                                    }
+                                }
                             }
-                        }
 
+                        }
+                        break;
                     }
-                    break;
                 }
             }
-        }
+
+        });
+
     }
 
 }

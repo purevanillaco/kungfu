@@ -5,3 +5,7 @@ author: quiquelhappy
 main: co.purevanilla.mcplugins.kungfu.Main
 softdepend:
   - VentureChat
+commands:
+  flushchat:
+    permission: "kungfu.flush"
+    usage: "/flushchat [max-lines]"

@@ -49,7 +49,7 @@ public class API {
 
         // load the chat log
         this.chat = this.createFile("chat.log", false);
-        if(Files.lines(this.chat.getAbsoluteFile().toPath()).count()!=data.getLong("lines")){
+        if(Files.lines(this.chat.toPath()).count()!=data.getLong("lines")){
             this.resetData();
         }
         this.chatOutput = Files.newBufferedWriter(this.chat.toPath(), StandardOpenOption.APPEND);
@@ -92,10 +92,10 @@ public class API {
 
             if(words>=wordDelta){
                 this.plugin.getLogger().info("reached the word limit ("+words+")");
-                this.flush(timestamp);
+                this.flush(timestamp, 0);
             } else if(deltaBlock>=this.plugin.getConfig().getLong("limits.timeframe")) {
                 this.plugin.getLogger().info("reached the timeframe limit ("+deltaBlock+")");
-                this.flush(timestamp);
+                this.flush(timestamp, 0);
             }
         }
     }
@@ -103,11 +103,31 @@ public class API {
     /**
      * generates summary. can print stacktrace, uses global try-catch to prevent disrupting async operation
      */
-    private void flush(Long finish) {
+    public void flush(long finish, long firstN) {
         flushing=true;
-        Long start = this.data.getLong("block");
+
+        if(finish==0) finish = this.currentTimestamp();
+
+        long start = this.data.getLong("block");
+        this.plugin.getLogger().info("flushing block spanning since "+start+" until "+finish);
         try {
-            final String content = Files.readString(this.chat.toPath());
+            String content = "";
+            if(firstN==0){
+                content = Files.readString(this.chat.toPath());
+            } else {
+                List<String> firstNLines = new ArrayList<>();
+                BufferedReader reader = new BufferedReader(new FileReader(this.chat));
+                String line;
+                long linesRead = 0;
+                if(firstN>this.data.getLong("lines")){
+                    firstN=this.data.getLong("lines");
+                }
+                while ((line = reader.readLine()) != null && linesRead < firstN) {
+                    firstNLines.add(line);
+                    linesRead++;
+                }
+                content = String.join("\n", firstNLines);
+            }
             flushing=true;
             @NonNull ConfigurationSection promptSection = Objects.requireNonNull(this.plugin.getConfig().getConfigurationSection("prompt"));
             Set<String> prompts = promptSection.getKeys(false);
@@ -115,9 +135,9 @@ public class API {
                 if(!promptSection.getBoolean(prompt+".enabled")) continue;
                 try {
                     this.generateReport(prompt, getOutput(prompt,content), start, finish);
-                } catch (InterruptedException err){
+                } catch (Exception err){
                     err.printStackTrace();
-                    this.plugin.getLogger().warning("unable to flush for prompt "+prompt);
+                    this.plugin.getLogger().warning("error while generating output (or flushing) prompt " + prompt+": " + err.getMessage());
                 }
             }
 
@@ -156,7 +176,7 @@ public class API {
     /**
      * get output for a particular prompt
      */
-    private String getOutput(String promptId, String content) throws IOException, InterruptedException {
+    private String getOutput(String promptId, String content) throws Exception {
 
         // https://platform.openai.com/docs/api-reference/chat/create
 
@@ -181,8 +201,14 @@ public class API {
                 .header("Authorization", "Bearer " + this.plugin.getConfig().getString("key"))
                 .POST(HttpRequest.BodyPublishers.ofString(body))
                 .build();
+
         HttpResponse<String> response = client.send(request, HttpResponse.BodyHandlers.ofString());
         JsonObject data = new Gson().fromJson(response.body(), JsonObject.class);
+
+        if(data.has("error")){
+            String errorMessage = data.get("error").getAsJsonObject().get("message").getAsString();
+            throw new Exception(errorMessage);
+        }
 
         JsonArray choices = data.getAsJsonArray("choices");
         StringBuilder cumulative = new StringBuilder();
