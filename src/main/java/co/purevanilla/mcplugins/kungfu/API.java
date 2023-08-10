@@ -7,6 +7,7 @@ import org.bukkit.configuration.ConfigurationSection;
 import org.bukkit.configuration.InvalidConfigurationException;
 import org.bukkit.configuration.file.FileConfiguration;
 import org.bukkit.configuration.file.YamlConfiguration;
+import org.bukkit.entity.Player;
 import org.bukkit.plugin.Plugin;
 import org.checkerframework.checker.nullness.qual.NonNull;
 
@@ -19,6 +20,7 @@ import java.net.http.HttpResponse;
 import java.nio.file.Files;
 import java.nio.file.StandardOpenOption;
 import java.util.ArrayList;
+import java.util.List;
 import java.util.Objects;
 import java.util.Set;
 
@@ -57,13 +59,17 @@ public class API {
     /**
      * pushes chat message, and generates summary if needed
      */
-    public void log(String sender, String message, @Nullable String recipient) throws IOException {
+    public void log(String sender, String message, @Nullable Set<Player> recipients) throws IOException {
         // messages appended while flushing are ignored, in the future, I might add a pool
         if(flushing) return;
 
         String format = sender + ": ";
-        if(recipient!=null){
-            format+="@"+recipient+" ";
+        if(recipients!=null){
+            List<String> recipientsFormatted = new ArrayList<>();
+            for (Player recipient: recipients){
+                recipientsFormatted.add("@"+recipient.getName());
+            }
+            format+=String.join(" ", recipientsFormatted) + " ";
         }
         format += message;
         this.chatOutput.write(format+"\n");
@@ -123,8 +129,13 @@ public class API {
         flushing=false;
     }
 
-    private void close() throws IOException {
+    boolean loggingDms(){
+        return this.plugin.getConfig().getBoolean("dms.enable");
+    }
+
+    void close() throws IOException {
         this.data.save(this.dataFile);
+        this.chatOutput.flush();
         this.chatOutput.close();
     }
 
