@@ -13,8 +13,6 @@ limits:
 dms:
   # include private messages on the prompt
   enable: false
-  # indicating private messaging may concern the model
-  format: '%username%: @%recipient% %message%'
 
 prompt:
   # the permission will be kungfu.prompt.moderation
