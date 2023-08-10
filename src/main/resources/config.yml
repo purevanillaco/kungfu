@@ -7,6 +7,8 @@ limits:
   timeframe: 7200 # 2h
   # maximum amount of words to accumulate for the summarizer, keep in mind the limits of each model
   words: 2950 # 3000 for v3.5 TURBO, 25000 for v4. please, subtract the largest enabled prompt word count
+  # minimum lines to try a prompt
+  minimum: 15
 
 dms:
   # include private messages on the prompt

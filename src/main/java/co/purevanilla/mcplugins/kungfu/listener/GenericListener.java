@@ -2,6 +2,7 @@ package co.purevanilla.mcplugins.kungfu.listener;
 
 import co.purevanilla.mcplugins.kungfu.Main;
 import io.papermc.paper.event.player.AsyncChatEvent;
+import net.kyori.adventure.text.TextComponent;
 import org.bukkit.event.EventHandler;
 
 import java.io.IOException;
@@ -11,7 +12,7 @@ public class GenericListener implements org.bukkit.event.Listener {
     @EventHandler()
     public void onMessage(AsyncChatEvent event){
         try {
-            Main.getAPI().log(event.getPlayer().getName(), event.originalMessage().toString(), null);
+            Main.getAPI().log(event.getPlayer().getName(), ((TextComponent) event.originalMessage()).content(), null);
         } catch (IOException e) {
             throw new RuntimeException(e);
         }

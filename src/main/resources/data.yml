@@ -1,0 +1,11 @@
+lines: 0 # amount of stored chat lines
+words: 0 # amount of stored words
+block: 0 # block start epoch
+
+report:
+  since:          # epoch block start
+    until: 0      # epoch block end
+    reviewed: []  # staff review
+    prompts:
+      moderation: |
+        content
